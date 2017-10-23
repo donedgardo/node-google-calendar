@@ -284,6 +284,26 @@ class Events {
 				throw new Error(JSON.stringify(error));
 			});
 	}
+	patch(calendarId, eventId, params, query) {
+		let checkResult = this._checkCalendarAndEventId(calendarId, eventId, 'Events.update');
+		if (undefined !== checkResult) {
+			return checkResult;
+		}
+
+		return this._httpRequest.patch(`${this._gcalBaseUrl}${calendarId}/events/${eventId}${toQs(query)}`, params, this._JWT)
+			.then(resp => {
+				this._checkErrorResponse(200, resp.statusCode, resp.body, resp.statusMessage);
+				let body = typeof resp.body === 'string' ? JSON.parse(resp.body) : resp.body;
+				return body;
+			})
+			.catch(err => {
+				let error = {
+					origin: 'Events.patch',
+					error: this._tryParseJSON(err.message)		// return as object if JSON, string if not parsable
+				};
+				throw new Error(JSON.stringify(error));
+			});
+	}
 
 	/** Watch for changes to Events resources
 	 *
